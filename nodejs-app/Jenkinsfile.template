@@ -13,6 +13,9 @@ pipeline {
          echo "Why didn't you push my button?"
       }
    }
+   triggers {
+    eventTrigger simpleMatch('hello-api-push-event')
+  }   
    stages{
      stage('Test') {
       agent {
