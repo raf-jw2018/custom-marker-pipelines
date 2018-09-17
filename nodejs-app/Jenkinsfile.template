@@ -35,6 +35,8 @@ pipeline {
          }
          steps {
            echo "Continuing with deployment"
+           submitter "RajeshChintkuntlawar"
+           submitterParameter "APPROVER"
          }
        }      
    }
