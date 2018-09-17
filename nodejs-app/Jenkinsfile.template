@@ -1,4 +1,6 @@
 library 'cd-accel'
+def testPodYaml = libraryResource 'podtemplates/nodejs-app/test-pod.yml'
+
 pipeline {
    agent none
    options { 
@@ -16,33 +18,7 @@ stage('Test') {
       agent {
         kubernetes {
           label 'nodejs-app-inline'
-          yaml """
-kind: Pod
-metadata:
-  name: nodejs-app
-spec:
-  containers:
-  - name: nodejs
-    image: node:10.9.0-alpine
-    command:
-    - cat
-    tty: true
-  - name: testcafe-chrome
-    image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
-    command:
-    - cat
-    tty: true
-  - name: testcafe-firefox
-    image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
-    command:
-    - cat
-    tty: true
-    ports:
-    - name: firefox1
-      containerPort: 1339
-    - name: firefox2
-      containerPort: 1340
-          """
+          yaml testPodYaml
         }
       }
       stages {
