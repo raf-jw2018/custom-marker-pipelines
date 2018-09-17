@@ -1,15 +1,15 @@
 pipeline {
    agent none
    options { 
-    buildDiscarder(logRotator(numToKeepStr: '2'))
-    skipDefaultCheckout true
-    preserveStashes(buildCount: 2)
+      buildDiscarder(logRotator(numToKeepStr: '2'))
+      skipDefaultCheckout true
+      preserveStashes(buildCount: 2)
    }   
    post {
-    aborted {
-      echo "Why didn't you push my button?"
-    }
-  }
+      aborted {
+         echo "Why didn't you push my button?"
+      }
+   }
 
     stage('Test') {
       parallel {
@@ -103,33 +103,33 @@ pipeline {
       }
     }
 
+
    stage('Build and Push Image') {
-         agent any
-         when {
-            beforeAgent true
-            branch 'master'
-         }
-         steps {
-            echo "TODO - build and push image"
-            unstash 'app'
-         }
+      agent any
+      when {
+         beforeAgent true
+         branch 'master'
       }
-      stage('Deploy') {
-         when {
-           beforeAgent true
-           branch 'master'
-         }
-         options {
-           timeout(time: 30, unit: 'SECONDS') 
-         }         
-         input {
-           message "Should we continue?"
-           //submitter "RajeshChintkuntlawar"
-           submitterParameter "APPROVER"
-         }
-         steps {
-          echo "Continuing with deployment - approved by ${APPROVER}"
-         }
-       }      
+      steps {
+         echo "TODO - build and push image"
+         unstash 'app'
+      }
+   }
+   stage('Deploy') {
+      when {
+         beforeAgent true
+         branch 'master'
+      }
+      options {
+         timeout(time: 30, unit: 'SECONDS') 
+      }         
+      input {
+         message "Should we continue?"
+         //submitter "RajeshChintkuntlawar"
+         submitterParameter "APPROVER"
+      }
+      steps {
+         echo "Continuing with deployment - approved by ${APPROVER}"
+      }
    }
 }
