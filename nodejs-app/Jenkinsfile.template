@@ -12,30 +12,30 @@ pipeline {
    }
    stages{
     stage('Test') {
-      parallel {
-        stage('Chrome') {
-          agent {
-            kubernetes {
-              label 'nodejs-app-inline'
-              yaml """
-    kind: Pod
-    metadata:
-      name: nodejs-app
-    spec:
-      containers:
-      - name: nodejs
-        image: node:10.9.0-alpine
-        command:
-        - cat
-        tty: true
-      - name: testcafe
-        image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
-        command:
-        - cat
-        tty: true
-              """
-            }
-          }          
+      agent {
+        kubernetes {
+          label 'nodejs-app-inline'
+          yaml """
+kind: Pod
+metadata:
+  name: nodejs-app
+spec:
+  containers:
+  - name: nodejs
+    image: node:10.9.0-alpine
+    command:
+    - cat
+    tty: true
+  - name: testcafe
+    image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
+    command:
+    - cat
+    tty: true
+          """
+        }
+      }
+      stages {
+        stage('Node Setup') {
           steps {
             checkout scm
             container('nodejs') {
@@ -45,64 +45,32 @@ pipeline {
                 node ./hello.js &
               '''
             }
+          }
+        }
+        stage('Chrome') {
+          steps {
             container('testcafe') {
               sh '/opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox" tests/*.js -r xunit:res.xml'
             }
           }
-          post {
-            success {
-              stash name: 'app', includes: '*.js, public/**, views/*, Dockerfile'
-            }
-            always {
-              junit 'res.xml'
-            }
-          } 
         }
         stage('Firefox') {
-          agent {
-            kubernetes {
-              label 'nodejs-app-inline'
-              yaml """
-    kind: Pod
-    metadata:
-      name: nodejs-app
-    spec:
-      containers:
-      - name: nodejs
-        image: node:10.9.0-alpine
-        command:
-        - cat
-        tty: true
-      - name: testcafe
-        image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
-        command:
-        - cat
-        tty: true
-              """
-            }
-          }
           steps {
-            checkout scm
-            container('nodejs') {
-              sh '''
-                npm install express
-                npm install pug --save
-                node ./hello.js &
-              '''
-            }
             container('testcafe') {
               sh '/opt/testcafe/docker/testcafe-docker.sh firefox tests/*.js -r xunit:res.xml'
             }
           }
-          post {
-            always {
-              junit 'res.xml'
-            }
-          }          
         }
       }
+      post {
+        success {
+          stash name: 'app', includes: '*.js, public/**, views/*, Dockerfile'
+        }
+        always {
+          junit 'res.xml'
+        }
+      }    
     }
-
 
    stage('Build and Push Image') {
       agent any
