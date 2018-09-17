@@ -14,7 +14,7 @@ pipeline {
       }
    }
    stages{
-stage('Test') {
+     stage('Test') {
       agent {
         kubernetes {
           label 'nodejs-app-inline'
@@ -62,16 +62,16 @@ stage('Test') {
     }
    
    stage('Build and Push Image') {
-      agent any
       when {
-         beforeAgent true
-         branch 'master'
+        beforeAgent true
+        branch 'master'
       }
       steps {
-         echo "TODO - build and push image"
-         unstash 'app'
+        dockerBuildPush(env.IMAGE_NAME, env.IMAGE_TAG) {
+          unstash 'app'
+        }
       }
-   }
+    }
    stage('Deploy') {
       when {
          beforeAgent true
